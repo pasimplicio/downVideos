@@ -31,7 +31,7 @@ O projeto utiliza bibliotecas como `tkinter` para a interface gráfica e `PIL` p
 ---
 
 ##  Como rodar o projeto
-
+- Para rodar corretamente, é necessário baixar o Download FFmpeg (https://www.ffmpeg.org/download.html) e descompactar a pasta ffmpeg no diretório raiz do sistema c:\downVideos
 ### 1. Clone este repositório:
 
 ```bash
