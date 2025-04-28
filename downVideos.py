@@ -1,4 +1,3 @@
-
 import tkinter as tk
 import shutil
 from tkinter import ttk, messagebox, filedialog
@@ -334,10 +333,11 @@ def atualizar_resolucoes():
         label_status.config(text="Resoluções atualizadas!")
 
 
-# Funções para corte de vídeo (mantidas da versão anterior)
+# Funções para corte de vídeo
 def formatar_tempo(segundos):
-    minutos, segundos = divmod(int(segundos), 60)
-    return f"{minutos:02d}:{segundos:02d}"
+    horas, resto = divmod(int(segundos), 3600)
+    minutos, segundos = divmod(resto, 60)
+    return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
 
 def obter_duracao_video(arquivo_video):
@@ -377,6 +377,9 @@ def cortar_video():
     janela_corte = tk.Toplevel(janela)
     janela_corte.title("Configuração de Corte")
     janela_corte.geometry("450x400")
+
+    # Centralizar a janela de corte
+    centralizar_janela(janela_corte, 450, 400)
 
     duracao_var = tk.IntVar(value=180)
     partes_var = tk.IntVar(value=calcular_partes(duracao_total, duracao_var.get()))
@@ -474,15 +477,313 @@ def executar_corte(arquivo_video, num_partes, duracao_parte, sobreposicao, janel
         janela_corte.destroy()
 
 
+def centralizar_janela(janela, largura, altura):
+    """Centraliza uma janela na tela"""
+    largura_tela = janela.winfo_screenwidth()
+    altura_tela = janela.winfo_screenheight()
+    x = (largura_tela // 2) - (largura // 2)
+    y = (altura_tela // 2) - (altura // 2)
+    janela.geometry(f'{largura}x{altura}+{x}+{y}')
+
+
+def cortar_video_avancado():
+    arquivo_video = filedialog.askopenfilename(
+        title="Selecione o vídeo para cortar",
+        filetypes=[("Vídeos", "*.mp4 *.avi *.mov *.mkv"), ("Todos os arquivos", "*.*")]
+    )
+
+    if not arquivo_video:
+        return
+
+    duracao_total = obter_duracao_video(arquivo_video)
+    if duracao_total <= 0:
+        return
+
+    janela_corte = tk.Toplevel(janela)
+    janela_corte.title("Corte Avançado de Vídeo")
+    janela_corte.geometry("600x550")  # Aumentei a altura para 550 pixels
+
+    # Centralizar a janela de corte avançado
+    centralizar_janela(janela_corte, 600, 550)
+
+    # Variáveis para controle do corte
+    inicio_var = tk.DoubleVar(value=0)
+    fim_var = tk.DoubleVar(value=duracao_total)
+    preview_var = tk.BooleanVar(value=True)  # Pré-visualização ativada por padrão
+    playing_var = tk.BooleanVar(value=False)  # Controle de play/pause
+
+    # Frame principal
+    frame_principal = tk.Frame(janela_corte)
+    frame_principal.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    # Canvas para visualização
+    canvas_preview = tk.Canvas(frame_principal, bg='black', height=200)
+    canvas_preview.pack(fill=tk.X, pady=5)
+
+    # Frame para controles de reprodução
+    frame_controles_reproducao = tk.Frame(frame_principal)
+    frame_controles_reproducao.pack(fill=tk.X, pady=5)
+
+    # Botões de controle de reprodução
+    btn_play = tk.Button(
+        frame_controles_reproducao,
+        text="▶ Play",
+        command=lambda: play_preview(),
+        width=8
+    )
+    btn_play.pack(side=tk.LEFT, padx=5)
+
+    btn_stop = tk.Button(
+        frame_controles_reproducao,
+        text="⏹ Stop",
+        command=lambda: stop_preview(),
+        width=8
+    )
+    btn_stop.pack(side=tk.LEFT, padx=5)
+
+    # Sliders para seleção de tempo
+    frame_sliders = tk.Frame(frame_principal)
+    frame_sliders.pack(fill=tk.X, pady=10)
+
+    # Slider de início
+    tk.Label(frame_sliders, text="Início:").pack(anchor='w')
+    slider_inicio = tk.Scale(
+        frame_sliders,
+        from_=0,
+        to=duracao_total,
+        variable=inicio_var,
+        orient=tk.HORIZONTAL,
+        length=550,
+        resolution=1,
+        command=lambda x: atualizar_preview()
+    )
+    slider_inicio.pack()
+
+    # Slider de fim
+    tk.Label(frame_sliders, text="Fim:").pack(anchor='w', pady=(10, 0))
+    slider_fim = tk.Scale(
+        frame_sliders,
+        from_=0,
+        to=duracao_total,
+        variable=fim_var,
+        orient=tk.HORIZONTAL,
+        length=550,
+        resolution=1,
+        command=lambda x: atualizar_preview()
+    )
+    slider_fim.set(duracao_total)
+    slider_fim.pack()
+
+    # Labels de tempo
+    frame_tempos = tk.Frame(frame_principal)
+    frame_tempos.pack(fill=tk.X)
+
+    label_tempos = tk.Label(frame_tempos, text="00:00:00 - 00:00:00")
+    label_tempos.pack(side=tk.LEFT)
+
+    label_duracao = tk.Label(frame_tempos, text=f"Duração do corte: 00:00:00")
+    label_duracao.pack(side=tk.RIGHT)
+
+    # Botões de ação na parte inferior
+    frame_botoes = tk.Frame(frame_principal)
+    frame_botoes.pack(fill=tk.X, pady=(20, 10))
+
+    btn_cortar = tk.Button(
+        frame_botoes,
+        text="Cortar Vídeo",
+        command=lambda: executar_corte_avancado(arquivo_video, inicio_var.get(), fim_var.get(), janela_corte),
+        height=2,
+        width=15
+    )
+    btn_cortar.pack(side=tk.RIGHT, padx=5)
+
+    btn_cancelar = tk.Button(
+        frame_botoes,
+        text="Cancelar",
+        command=janela_corte.destroy,
+        height=2,
+        width=15
+    )
+    btn_cancelar.pack(side=tk.RIGHT, padx=5)
+
+    # Variáveis para controle de reprodução
+    preview_process = None
+    current_preview_time = 0
+
+    def atualizar_tempos():
+        """Atualiza os labels de tempo conforme os sliders são movidos"""
+        nonlocal current_preview_time
+        inicio = inicio_var.get()
+        fim = fim_var.get()
+
+        # Garantir que o início não seja maior que o fim
+        if inicio > fim:
+            inicio_var.set(fim)
+            inicio = fim
+
+        # Garantir que o fim não seja menor que o início
+        if fim < inicio:
+            fim_var.set(inicio)
+            fim = inicio
+
+        label_tempos.config(text=f"{formatar_tempo(inicio)} - {formatar_tempo(fim)}")
+        duracao_corte = fim - inicio
+        label_duracao.config(text=f"Duração do corte: {formatar_tempo(duracao_corte)}")
+
+        # Resetar tempo atual da pré-visualização
+        current_preview_time = inicio
+
+    def atualizar_preview():
+        """Atualiza a pré-visualização quando os sliders são movidos"""
+        stop_preview()
+        atualizar_tempos()
+        if preview_var.get():
+            gerar_preview_still()
+
+    def gerar_preview_still():
+        """Gera uma imagem estática da pré-visualização"""
+        try:
+            # Limpar canvas
+            canvas_preview.delete("all")
+
+            # Pegar frame do tempo atual
+            frame_time = current_preview_time
+
+            # Gerar miniatura temporária
+            temp_image = os.path.join(os.path.dirname(arquivo_video), "temp_preview.jpg")
+
+            cmd = [
+                'ffmpeg',
+                '-ss', str(frame_time),
+                '-i', arquivo_video,
+                '-vframes', '1',
+                '-q:v', '2',
+                '-y',
+                temp_image
+            ]
+
+            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Carregar a imagem no canvas
+            img = Image.open(temp_image)
+            img.thumbnail((580, 190))
+            photo = ImageTk.PhotoImage(img)
+
+            canvas_preview.image = photo  # Manter referência
+            canvas_preview.create_image(0, 0, anchor='nw', image=photo)
+            canvas_preview.create_text(10, 10, text=f"Pré-visualização: {formatar_tempo(frame_time)}",
+                                       fill="white", anchor='nw', font=('Arial', 10, 'bold'))
+
+            # Remover arquivo temporário
+            os.remove(temp_image)
+
+        except Exception as e:
+            logging.error(f"Erro ao gerar pré-visualização: {e}")
+            canvas_preview.create_text(300, 100, text="Erro ao gerar pré-visualização", fill="red", font=('Arial', 12))
+
+    def play_preview():
+        """Reproduz a seção selecionada do vídeo"""
+        nonlocal preview_process, current_preview_time
+
+        if playing_var.get():
+            return
+
+        playing_var.set(True)
+        btn_play.config(state=tk.DISABLED)
+        btn_stop.config(state=tk.NORMAL)
+
+        inicio = inicio_var.get()
+        fim = fim_var.get()
+        current_preview_time = inicio
+
+        # Criar diretório temporário se não existir
+        temp_dir = os.path.join(os.path.dirname(arquivo_video), "temp_preview")
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # Caminho para o arquivo temporário
+        temp_video = os.path.join(temp_dir, "preview.mp4")
+
+        try:
+            # Primeiro cortamos o trecho selecionado para um arquivo temporário
+            cmd_cut = [
+                'ffmpeg',
+                '-ss', str(inicio),
+                '-i', arquivo_video,
+                '-t', str(fim - inicio),
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '30',
+                '-c:a', 'aac',
+                '-y',
+                '-loglevel', 'error',
+                temp_video
+            ]
+
+            # Executar e esperar terminar
+            subprocess.run(cmd_cut, check=True)
+
+            # Verificar se o arquivo foi criado
+            if not os.path.exists(temp_video):
+                raise FileNotFoundError(f"Arquivo temporário não foi criado: {temp_video}")
+
+            # Agora reproduzimos o vídeo cortado diretamente sem janela
+            cmd_play = [
+                'ffplay',
+                '-window_title', 'Pré-visualização do Corte',
+                '-autoexit',
+                '-loglevel', 'error',
+                '-noborder',
+                '-x', '640',
+                '-y', '360',
+                temp_video
+            ]
+
+            preview_process = subprocess.Popen(cmd_play)
+
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Erro ao cortar vídeo para pré-visualização: {e}")
+            messagebox.showerror("Erro",
+                                 "Falha ao preparar a pré-visualização. Verifique se o FFmpeg está instalado corretamente.")
+            stop_preview()
+        except FileNotFoundError as e:
+            logging.error(f"Erro ao encontrar arquivo: {e}")
+            messagebox.showerror("Erro", "Não foi possível criar o arquivo temporário para pré-visualização.")
+            stop_preview()
+        except Exception as e:
+            logging.error(f"Erro inesperado ao reproduzir pré-visualização: {e}")
+            messagebox.showerror("Erro", f"Ocorreu um erro inesperado: {e}")
+            stop_preview()
+
+    def stop_preview():
+        """Para a reprodução da pré-visualização"""
+        nonlocal preview_process
+        playing_var.set(False)
+        btn_play.config(state=tk.NORMAL)
+        btn_stop.config(state=tk.DISABLED)
+
+        if preview_process and preview_process.poll() is None:
+            preview_process.terminate()
+            preview_process = None
+
+        # Limpar arquivos temporários
+        try:
+            temp_dir = os.path.join(os.path.dirname(arquivo_video), "temp_preview")
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+        except Exception as e:
+            logging.error(f"Erro ao limpar arquivos temporários: {e}")
+
+        # Mostrar frame atual ao parar
+        gerar_preview_still()
 # Configuração da interface gráfica
 janela = tk.Tk()
 janela.title("downVideos v1.6")
-janela.geometry("550x650")
+janela.geometry("550x750")  # Aumentado para acomodar o novo botão
 janela.resizable(False, False)
 
-# Centralizar janela
+# Centralizar janela principal
 largura_janela = 550
-altura_janela = 650
+altura_janela = 750
 largura_tela = janela.winfo_screenwidth()
 altura_tela = janela.winfo_screenheight()
 x = (largura_tela // 2) - (largura_janela // 2)
@@ -552,9 +853,13 @@ botao_instagram.pack(side=tk.LEFT, padx=5)
 botao_facebook = tk.Button(frame_botoes, text="Baixar do Facebook", command=lambda: baixar_video("Facebook"))
 botao_facebook.pack(side=tk.LEFT, padx=5)
 
-# Botão para cortar vídeo
+# Botão para cortar vídeo em partes
 botao_cortar = tk.Button(janela, text="Cortar Vídeo em Partes", command=cortar_video)
-botao_cortar.pack(pady=10)
+botao_cortar.pack(pady=5)
+
+# Botão para corte avançado
+botao_corte_avancado = tk.Button(janela, text="Corte Avançado (Selecionar Parte)", command=cortar_video_avancado)
+botao_corte_avancado.pack(pady=5)
 
 # Barra de progresso
 barra_progresso = ttk.Progressbar(janela, orient="horizontal", length=300, mode="determinate")
