@@ -498,7 +498,7 @@ except Exception as e:
 # Logo do aplicativo
 try:
     imagem = Image.open(resource_path("downVideos.png"))
-    imagem = imagem.resize((80, 80), Image.Resampling.LANCZOS)
+    imagem = imagem.resize((100, 100), Image.Resampling.LANCZOS)
     imagem_tk = ImageTk.PhotoImage(imagem)
 except Exception as e:
     logging.error(f"Erro ao carregar a imagem: {e}")
