@@ -4,5 +4,4 @@ __pycache__/
 *.pyo
 *.pyd
 *.log
-downVideos_Setup.exe
-ffmpeg/
+*.exe
