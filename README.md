@@ -1,8 +1,13 @@
 # downVideos
 
-**Versão 1.6**  
+**Versão 1.8**  
 Projeto para download e manipulação de vídeos de forma prática e eficiente.
-
+downVideos/
+│── main.py (ponto de entrada)
+│── downloader.py (lógica de download)
+│── editor.py (edição de vídeo)
+│── utils.py (funções auxiliares)
+│── interface.py (interface gráfica)
 ---
 
 ## Descrição
