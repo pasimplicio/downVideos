@@ -99,24 +99,28 @@ class VideoDownloaderApp:
         frame_botoes.pack(pady=10)
 
         self.btn_youtube = tk.Button(frame_botoes, text="Baixar do YouTube",
-                                     command=lambda: self.baixar_video("YouTube"))
+                                   command=lambda: self.baixar_video("YouTube"), width=15)
         self.btn_youtube.pack(side=tk.LEFT, padx=5)
 
         self.btn_instagram = tk.Button(frame_botoes, text="Baixar do Instagram",
-                                       command=lambda: self.baixar_video("Instagram"))
+                                     command=lambda: self.baixar_video("Instagram"), width=15)
         self.btn_instagram.pack(side=tk.LEFT, padx=5)
 
         self.btn_facebook = tk.Button(frame_botoes, text="Baixar do Facebook",
-                                      command=lambda: self.baixar_video("Facebook"))
+                                    command=lambda: self.baixar_video("Facebook"), width=15)
         self.btn_facebook.pack(side=tk.LEFT, padx=5)
 
-        # Video Editing Buttons
-        self.btn_cortar = tk.Button(self.root, text="Cortar Vídeo em Partes", command=self.cortar_video)
-        self.btn_cortar.pack(pady=5)
+        # Video Editing Buttons - Agora lado a lado
+        frame_corte = tk.Frame(self.root)
+        frame_corte.pack(pady=5)
 
-        self.btn_corte_avancado = tk.Button(self.root, text="Corte Avançado (Selecionar Parte)",
-                                            command=self.cortar_video_avancado)
-        self.btn_corte_avancado.pack(pady=5)
+        self.btn_cortar = tk.Button(frame_corte, text="Cortar Partes",
+                                  command=self.cortar_video, width=15)
+        self.btn_cortar.pack(side=tk.LEFT, padx=5)
+
+        self.btn_corte_avancado = tk.Button(frame_corte, text="Corte Avançado",
+                                          command=self.cortar_video_avancado, width=15)
+        self.btn_corte_avancado.pack(side=tk.LEFT, padx=5)
 
         # Progress Bar
         self.barra_progresso = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
@@ -124,7 +128,7 @@ class VideoDownloaderApp:
 
         # Stats Label
         self.label_estatisticas = tk.Label(self.root, text="Velocidade: 0 KB/s | Baixado: 0 MB / 0 MB",
-                                           font=('Arial', 9))
+                                         font=('Arial', 9))
         self.label_estatisticas.pack(pady=5)
 
         # Status Label
@@ -133,11 +137,11 @@ class VideoDownloaderApp:
 
         # Open Directory Button
         self.btn_abrir_diretorio = tk.Button(self.root, text="Abrir Diretório", command=self.abrir_diretorio,
-                                             state=tk.DISABLED)
+                                           state=tk.DISABLED)
         self.btn_abrir_diretorio.pack(pady=10)
 
         # Credits
-        tk.Label(self.root, text="Criado por Paulo Simplicio© - downVideos v1.6", font=("Arial", 8)).pack(pady=5)
+        tk.Label(self.root, text="Criado por Paulo Simplicio© - downVideos v1.8", font=("Arial", 8)).pack(pady=5)
 
     def escolher_diretorio(self):
         novo_diretorio = filedialog.askdirectory(title="Escolha onde salvar o vídeo")
